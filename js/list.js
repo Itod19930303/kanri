@@ -131,13 +131,13 @@ function renderList(tickets, allTickets) {
   });
 
   view.querySelectorAll('.list-add-child').forEach(btn => {
-    btn.addEventListener('click', () => App.openModal(null, 'not_started', parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.openModal(null, 'not_started', btn.dataset.id));
   });
   view.querySelectorAll('.list-edit').forEach(btn => {
-    btn.addEventListener('click', () => App.openModal(parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.openModal(btn.dataset.id));
   });
   view.querySelectorAll('.list-delete').forEach(btn => {
-    btn.addEventListener('click', () => App.deleteTicket(parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.deleteTicket(btn.dataset.id));
   });
 }
 
@@ -146,7 +146,7 @@ function collapseRows(view, parentId) {
   const childRows = view.querySelectorAll(`tr[data-parent-id="${String(parentId)}"]`);
   childRows.forEach(row => {
     row.style.display = 'none';
-    const childId = parseInt(row.dataset.rowId);
+    const childId = row.dataset.rowId;
     const toggle = row.querySelector('.tree-toggle');
     if (toggle) {
       toggle.dataset.open = '0';

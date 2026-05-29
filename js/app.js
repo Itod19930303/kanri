@@ -111,7 +111,7 @@ const App = (() => {
         priority: fd.get('priority'),
         dueDate: fd.get('dueDate'),
         labels: [...currentLabels],
-        parentId: parentIdRaw ? parseInt(parentIdRaw) : null
+        parentId: parentIdRaw ? String(parentIdRaw) : null
       };
 
       if (state.editingId != null) {

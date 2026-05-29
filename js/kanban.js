@@ -47,7 +47,7 @@ function renderKanban(tickets, allTickets) {
       animation: 150,
       ghostClass: 'opacity-40',
       onEnd: async (evt) => {
-        const id = parseInt(evt.item.dataset.id);
+        const id = evt.item.dataset.id;
         const newStatus = evt.to.dataset.status;
         await DB.update(id, { status: newStatus });
         await App.refresh();
@@ -60,16 +60,16 @@ function renderKanban(tickets, allTickets) {
     btn.addEventListener('click', () => App.openModal(null, btn.dataset.status));
   });
   view.querySelectorAll('.card-edit').forEach(btn => {
-    btn.addEventListener('click', () => App.openModal(parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.openModal(btn.dataset.id));
   });
   view.querySelectorAll('.card-delete').forEach(btn => {
-    btn.addEventListener('click', () => App.deleteTicket(parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.deleteTicket(btn.dataset.id));
   });
   view.querySelectorAll('.card-add-child').forEach(btn => {
-    btn.addEventListener('click', () => App.openModal(null, 'not_started', parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => App.openModal(null, 'not_started', btn.dataset.id));
   });
   view.querySelectorAll('.child-edit-btn').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); App.openModal(parseInt(btn.dataset.id)); });
+    btn.addEventListener('click', e => { e.stopPropagation(); App.openModal(btn.dataset.id); });
   });
 
   // アコーディオントグル（子課題・孫課題共通）
