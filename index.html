@@ -6,6 +6,7 @@
   <title>Kanri — チケット管理</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="min-h-screen" style="background:#f5f3ff">
@@ -20,7 +21,7 @@
         </svg>
         <span class="text-lg font-bold tracking-tight" style="color:#1c1d1f">Kanri</span>
       </div>
-      <span class="text-xs hidden sm:block" style="color:#6a6f73" id="ticket-count"></span>
+      <span class="text-xs font-bold hidden sm:block" style="color:#374151" id="ticket-count"></span>
     </div>
 
     <div class="flex-none flex items-center gap-2">
@@ -113,8 +114,8 @@
           <label class="form-control">
             <div class="label"><span class="label-text font-medium">ステータス</span></div>
             <select name="status" class="select select-bordered">
-              <option value="not_started">未着手</option>
               <option value="todo">Todo</option>
+              <option value="not_started">未着手</option>
               <option value="in_progress">進行中</option>
               <option value="done">完了</option>
             </select>
@@ -156,7 +157,7 @@
         <div class="flex justify-between items-center mt-2">
           <button type="button" id="modal-delete" class="btn btn-error btn-sm hidden">削除</button>
           <div class="flex gap-2 ml-auto">
-            <button type="button" id="modal-cancel" class="btn btn-ghost btn-sm">キャンセル</button>
+            <button type="button" id="modal-cancel" class="btn btn-sm" style="background:#f3f0ff;border-color:#c4b5fd;color:#5624d0">キャンセル</button>
             <button type="submit" class="btn btn-sm text-white" style="background:#5624d0; border-color:#5624d0">保存</button>
           </div>
         </div>

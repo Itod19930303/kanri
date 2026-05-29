@@ -65,7 +65,7 @@ function renderList(tickets, allTickets) {
                       ${depthLabel ? `<span class="badge badge-xs shrink-0" style="${depthStyle}">${depthLabel}</span>` : ''}
                       <div class="min-w-0">
                         <p class="font-medium text-sm leading-snug">${escHtml(t.title)}</p>
-                        ${t.description ? `<p class="text-xs line-clamp-1" style="color:#6a6f73">${escHtml(t.description)}</p>` : ''}
+                        ${t.description ? `<p class="text-xs line-clamp-1" style="color:#4b5563">${escHtml(t.description)}</p>` : ''}
                       </div>
                     </div>
                   </td>

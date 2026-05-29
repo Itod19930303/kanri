@@ -1,6 +1,6 @@
 const KANBAN_COLUMNS = [
-  { id: 'not_started', label: '未着手', colorClass: 'col-not-started' },
   { id: 'todo',        label: 'Todo',  colorClass: 'col-todo' },
+  { id: 'not_started', label: '未着手', colorClass: 'col-not-started' },
   { id: 'in_progress', label: '進行中', colorClass: 'col-in-progress' },
   { id: 'done',        label: '完了',  colorClass: 'col-done' }
 ];

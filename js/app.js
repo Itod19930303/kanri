@@ -189,7 +189,7 @@ const App = (() => {
       }).join('');
   }
 
-  function openModal(id, defaultStatus = 'not_started', defaultParentId = null) {
+  function openModal(id, defaultStatus = 'todo', defaultParentId = null) {
     state.editingId = id;
     const form = document.getElementById('ticket-form');
     form.reset();

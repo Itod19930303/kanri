@@ -20,19 +20,58 @@
 }
 
 body {
-  color: var(--udemy-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1c1d1f;
+  font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+}
+
+/* テーブル全体のテキストを濃く */
+.table th {
+  color: #1c1d1f;
+  font-weight: 700;
+  font-size: 13px;
+}
+.table td {
+  color: #1c1d1f;
+  font-weight: 500;
+}
+.table tr.hover:hover td {
+  color: #1c1d1f;
+}
+
+/* ===== ボタン共通（DaisyUIデフォルト上書き） ===== */
+.btn:not(.btn-ghost):not(.btn-link):not(.btn-error):not(.btn-warning):not(.btn-info):not(.view-btn) {
+  background: var(--udemy-purple);
+  border-color: var(--udemy-purple);
+  color: #fff;
+}
+.btn:not(.btn-ghost):not(.btn-link):not(.btn-error):not(.btn-warning):not(.btn-info):not(.view-btn):hover {
+  background: var(--udemy-purple-light);
+  border-color: var(--udemy-purple-light);
+  color: #fff;
+}
+.btn-ghost {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--udemy-muted) !important;
+}
+.btn-ghost:hover {
+  background: var(--udemy-purple-pale) !important;
+  color: var(--udemy-purple) !important;
+}
+.btn-error {
+  color: #fff !important;
 }
 
 /* ===== ビュー切り替えボタン ===== */
 .view-btn {
-  background: #fff;
-  border-color: var(--udemy-border);
-  color: var(--udemy-muted);
+  background: #f3f0ff;
+  border-color: #c4b5fd;
+  color: var(--udemy-purple);
   transition: all 0.15s;
 }
 .view-btn:hover {
-  background: var(--udemy-purple-pale);
+  background: #ddd6fe;
   color: var(--udemy-purple);
   border-color: var(--udemy-purple);
 }
