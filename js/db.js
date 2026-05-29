@@ -4,6 +4,10 @@ db.version(1).stores({
   tickets: '++id, status, priority, dueDate, createdAt'
 });
 
+db.version(2).stores({
+  tickets: '++id, status, priority, dueDate, createdAt, parentId'
+});
+
 const DB = {
   async getAll() {
     return await db.tickets.toArray();
@@ -14,6 +18,7 @@ const DB = {
     return await db.tickets.add({
       ...ticket,
       labels: ticket.labels || [],
+      parentId: ticket.parentId || null,
       createdAt: now,
       updatedAt: now
     });

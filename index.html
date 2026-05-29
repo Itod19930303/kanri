@@ -134,12 +134,23 @@
           <input name="dueDate" type="date" class="input input-bordered">
         </label>
 
-        <label class="form-control">
-          <div class="label">
-            <span class="label-text font-medium">ラベル</span>
-            <span class="label-text-alt" style="color:#6a6f73">カンマ区切りで複数入力</span>
+        <!-- Labels chip input -->
+        <div class="form-control">
+          <div class="label"><span class="label-text font-medium">ラベル</span></div>
+          <div id="label-chips-container" class="label-chips-container">
+            <div id="label-chips"></div>
+            <input id="label-input" type="text" list="label-suggestions"
+              placeholder="入力してEnterで追加…" class="label-chip-input">
           </div>
-          <input name="labels" type="text" placeholder="例: frontend, bug, urgent" class="input input-bordered">
+          <datalist id="label-suggestions"></datalist>
+        </div>
+
+        <!-- Parent ticket -->
+        <label class="form-control">
+          <div class="label"><span class="label-text font-medium">親課題</span></div>
+          <select id="parent-select" class="select select-bordered">
+            <option value="">なし（ルート課題）</option>
+          </select>
         </label>
 
         <div class="flex justify-between items-center mt-2">

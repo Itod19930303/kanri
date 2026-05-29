@@ -115,6 +115,167 @@ body {
   overflow: hidden;
 }
 
+/* ===== アコーディオン（カンバン・リスト共通） ===== */
+.acc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--udemy-muted);
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+}
+.acc-toggle:hover {
+  background: var(--udemy-purple-pale);
+  color: var(--udemy-purple);
+}
+.acc-arrow {
+  font-size: 9px;
+  transition: transform 0.15s;
+  display: inline-block;
+  width: 10px;
+}
+.acc-body {
+  margin-top: 4px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  background: #f8f6ff;
+  border: 1px solid #e9e4f8;
+}
+.acc-body.is-open {
+  display: flex;
+}
+
+/* ===== 子課題ミニカード（カンバン内） ===== */
+.child-mini-card {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #e5e0f8;
+  font-size: 12px;
+}
+.child-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.child-title {
+  font-size: 12px;
+  color: var(--udemy-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.child-edit-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--udemy-muted);
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+}
+.child-edit-btn:hover {
+  background: var(--udemy-purple-pale);
+  color: var(--udemy-purple);
+}
+.grandchild-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: #f3f0ff;
+  font-size: 11px;
+}
+.acc-add-btn {
+  font-size: 11px;
+  color: var(--udemy-purple);
+  background: transparent;
+  border: 1px dashed #c4b5fd;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.1s;
+}
+.acc-add-btn:hover { background: var(--udemy-purple-pale); }
+
+/* ===== リストのトグルボタン ===== */
+.acc-toggle-row {
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+/* ===== ラベルチップ入力 ===== */
+.label-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-height: 42px;
+  padding: 6px 10px;
+  border: 1px solid var(--udemy-border);
+  border-radius: 8px;
+  background: #fff;
+  cursor: text;
+  transition: border-color 0.15s;
+}
+.label-chips-container:focus-within {
+  border-color: var(--udemy-purple);
+  box-shadow: 0 0 0 2px rgba(86,36,208,0.1);
+}
+
+#label-chips {
+  display: contents;
+}
+
+.label-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--udemy-purple-pale);
+  color: var(--udemy-purple);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.label-chip-del {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.1s;
+  padding: 0 2px;
+}
+.label-chip-del:hover { opacity: 1; }
+
+.label-chip-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  min-width: 120px;
+  flex: 1;
+  color: var(--udemy-text);
+}
+
 /* ===== ガントチャート ===== */
 .gantt-container {
   background: #fff;
