@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanri — チケット管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen" style="background:#f5f3ff">
+
+  <!-- Header -->
+  <header class="navbar shadow-sm sticky top-0 z-20 px-0" style="background:#fff; border-bottom:1px solid #e5e0f8">
+    <div class="max-w-screen-2xl mx-auto w-full flex items-center px-4 gap-2">
+    <div class="flex-1 flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color:#5624d0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        <span class="text-lg font-bold tracking-tight" style="color:#1c1d1f">Kanri</span>
+      </div>
+      <span class="text-xs hidden sm:block" style="color:#6a6f73" id="ticket-count"></span>
+    </div>
+
+    <div class="flex-none flex items-center gap-2">
+      <!-- Search -->
+      <label class="input input-bordered input-sm flex items-center gap-2 hidden md:flex" style="border-color:#d1d7dc">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="検索…" class="w-40 bg-transparent outline-none text-sm">
+      </label>
+
+      <!-- Priority filter -->
+      <select id="filter-priority" class="select select-bordered select-sm hidden sm:block" style="border-color:#d1d7dc">
+        <option value="">優先度: すべて</option>
+        <option value="high">高</option>
+        <option value="medium">中</option>
+        <option value="low">低</option>
+      </select>
+
+      <!-- Label filter -->
+      <select id="filter-label" class="select select-bordered select-sm hidden sm:block" style="border-color:#d1d7dc">
+        <option value="">ラベル: すべて</option>
+      </select>
+
+      <!-- View toggle -->
+      <div class="join">
+        <button id="btn-kanban" class="btn btn-sm join-item view-btn view-btn-active" title="カンバン">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+          </svg>
+        </button>
+        <button id="btn-list" class="btn btn-sm join-item view-btn" title="リスト">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </button>
+        <button id="btn-gantt" class="btn btn-sm join-item view-btn" title="ガントチャート">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- New ticket -->
+      <button id="btn-new" class="btn btn-sm gap-1 text-white" style="background:#5624d0; border-color:#5624d0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span class="hidden sm:inline">新規</span>
+      </button>
+    </div>
+    </div>
+  </header>
+
+  <!-- Mobile search -->
+  <div class="px-4 pt-3 md:hidden max-w-screen-2xl mx-auto w-full">
+    <label class="input input-bordered input-sm flex items-center gap-2 w-full">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" placeholder="検索…" class="bg-transparent outline-none text-sm w-full"
+        oninput="document.getElementById('search-input').value=this.value;document.getElementById('search-input').dispatchEvent(new Event('input'))">
+    </label>
+  </div>
+
+  <!-- Main content -->
+  <main class="p-4 max-w-screen-2xl mx-auto w-full">
+    <div id="kanban-view" class="flex gap-4 items-start"></div>
+    <div id="list-view" class="hidden"></div>
+    <div id="gantt-view" class="hidden"></div>
+  </main>
+
+  <!-- Ticket modal -->
+  <dialog id="ticket-modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box" style="background:#fff">
+      <h3 class="font-bold text-lg mb-4" id="modal-title-text" style="color:#1c1d1f">新しいチケット</h3>
+
+      <form id="ticket-form" method="dialog" class="flex flex-col gap-3">
+        <label class="form-control">
+          <div class="label"><span class="label-text font-medium">タイトル <span class="text-error">*</span></span></div>
+          <input name="title" type="text" placeholder="チケットのタイトル" class="input input-bordered" required>
+        </label>
+
+        <label class="form-control">
+          <div class="label"><span class="label-text font-medium">説明</span></div>
+          <textarea name="description" placeholder="詳細説明…" class="textarea textarea-bordered h-24 resize-none"></textarea>
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="form-control">
+            <div class="label"><span class="label-text font-medium">ステータス</span></div>
+            <select name="status" class="select select-bordered">
+              <option value="not_started">未着手</option>
+              <option value="todo">Todo</option>
+              <option value="in_progress">進行中</option>
+              <option value="done">完了</option>
+            </select>
+          </label>
+          <label class="form-control">
+            <div class="label"><span class="label-text font-medium">優先度</span></div>
+            <select name="priority" class="select select-bordered">
+              <option value="high">高</option>
+              <option value="medium">中</option>
+              <option value="low">低</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="form-control">
+          <div class="label"><span class="label-text font-medium">期限日</span></div>
+          <input name="dueDate" type="date" class="input input-bordered">
+        </label>
+
+        <label class="form-control">
+          <div class="label">
+            <span class="label-text font-medium">ラベル</span>
+            <span class="label-text-alt" style="color:#6a6f73">カンマ区切りで複数入力</span>
+          </div>
+          <input name="labels" type="text" placeholder="例: frontend, bug, urgent" class="input input-bordered">
+        </label>
+
+        <div class="flex justify-between items-center mt-2">
+          <button type="button" id="modal-delete" class="btn btn-error btn-sm hidden">削除</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" id="modal-cancel" class="btn btn-ghost btn-sm">キャンセル</button>
+            <button type="submit" class="btn btn-sm text-white" style="background:#5624d0; border-color:#5624d0">保存</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.7/dist/dexie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/kanban.js"></script>
+  <script src="js/list.js"></script>
+  <script src="js/gantt.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

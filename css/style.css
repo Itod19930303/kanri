@@ -1,0 +1,299 @@
+/* ===== Udemy風カラーテーマ ===== */
+:root {
+  --udemy-purple: #5624d0;
+  --udemy-purple-light: #7c3aed;
+  --udemy-purple-pale: #ede9fe;
+  --udemy-bg: #f5f3ff;
+  --udemy-text: #1c1d1f;
+  --udemy-muted: #6a6f73;
+  --udemy-border: #d1d7dc;
+}
+
+/* DaisyUIプライマリカラーを紫に上書き */
+[data-theme="light"] {
+  --color-primary: oklch(0.45 0.22 285);
+  --color-primary-content: oklch(1 0 0);
+  --color-base-100: oklch(1 0 0);
+  --color-base-200: oklch(0.97 0.012 285);
+  --color-base-300: oklch(0.93 0.018 285);
+  --color-base-content: oklch(0.17 0.02 285);
+}
+
+body {
+  color: var(--udemy-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===== ビュー切り替えボタン ===== */
+.view-btn {
+  background: #fff;
+  border-color: var(--udemy-border);
+  color: var(--udemy-muted);
+  transition: all 0.15s;
+}
+.view-btn:hover {
+  background: var(--udemy-purple-pale);
+  color: var(--udemy-purple);
+  border-color: var(--udemy-purple);
+}
+.view-btn-active {
+  background: var(--udemy-purple) !important;
+  border-color: var(--udemy-purple) !important;
+  color: #fff !important;
+}
+
+/* ===== カンバン列ヘッダーバッジ ===== */
+.col-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.col-not-started { background: #e5e7eb; color: #374151; }
+.col-todo        { background: #dbeafe; color: #1d4ed8; }
+.col-in-progress { background: #fef9c3; color: #92400e; }
+.col-done        { background: #dcfce7; color: #166534; }
+
+/* ===== カンバン列背景 ===== */
+.kanban-col {
+  background: #fff;
+  border: 1px solid var(--udemy-border);
+  border-radius: 12px;
+  transition: background 0.15s;
+  min-height: 120px;
+  padding: 8px;
+}
+.kanban-col.sortable-over {
+  background: var(--udemy-purple-pale);
+  border-color: var(--udemy-purple);
+}
+
+/* ===== チケットカード ===== */
+[data-id] {
+  background: #fff;
+  border: 1px solid var(--udemy-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+[data-id]:hover {
+  box-shadow: 0 4px 12px rgba(86,36,208,0.12);
+  transform: translateY(-1px);
+}
+[data-id] .card-edit,
+[data-id] .card-delete {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+[data-id]:hover .card-edit,
+[data-id]:hover .card-delete {
+  opacity: 1;
+}
+
+/* ===== スクロール ===== */
+#kanban-view {
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+/* ===== テキストクランプ ===== */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== ガントチャート ===== */
+.gantt-container {
+  background: #fff;
+  border: 1px solid var(--udemy-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gantt-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--udemy-border);
+  background: var(--udemy-purple-pale);
+}
+.gantt-month-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--udemy-purple);
+  flex: 1;
+  text-align: center;
+}
+
+.gantt-scroll-wrap {
+  overflow-x: auto;
+}
+
+.gantt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+.gantt-label-col {
+  width: 200px;
+  min-width: 200px;
+}
+
+.gantt-label-header {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f9fafb;
+  border-bottom: 2px solid var(--udemy-border);
+  border-right: 1px solid var(--udemy-border);
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--udemy-muted);
+  text-align: left;
+}
+
+.gantt-day-header {
+  width: 32px;
+  min-width: 28px;
+  border-bottom: 2px solid var(--udemy-border);
+  border-right: 1px solid #f0f0f0;
+  padding: 6px 2px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--udemy-muted);
+  background: #f9fafb;
+  font-size: 11px;
+}
+.gantt-weekend {
+  background: #f3f0ff;
+  color: #7c3aed;
+}
+.gantt-today-col {
+  background: #ede9fe !important;
+  color: var(--udemy-purple) !important;
+}
+
+.gantt-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+.gantt-row:hover {
+  background: #faf9ff;
+}
+
+.gantt-label-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  border-right: 1px solid var(--udemy-border);
+  padding: 6px 12px;
+  min-width: 200px;
+  max-width: 200px;
+}
+.gantt-row:hover .gantt-label-cell {
+  background: #faf9ff;
+}
+
+.gantt-label-text {
+  font-weight: 500;
+  color: var(--udemy-text);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+.gantt-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--udemy-muted);
+}
+
+.gantt-pri-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.gantt-cell {
+  border-right: 1px solid #f0f0f0;
+  padding: 3px 0;
+  vertical-align: middle;
+}
+
+.gantt-today-line {
+  background: rgba(124,58,237,0.06);
+}
+
+.gantt-bar {
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: filter 0.15s;
+}
+.gantt-bar:hover {
+  filter: brightness(1.1);
+}
+.gantt-bar-label {
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gantt-empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--udemy-muted);
+  font-weight: 500;
+}
+
+.gantt-no-due {
+  padding: 12px 16px;
+  border-top: 1px solid var(--udemy-border);
+  background: #f9fafb;
+}
+.gantt-no-due-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--udemy-muted);
+  margin-bottom: 8px;
+}
+.gantt-no-due-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 99px;
+  background: #e5e7eb;
+  color: var(--udemy-text);
+  font-size: 11px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
