@@ -497,3 +497,85 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ===== モバイル対応 ===== */
+
+/* タッチデバイス: カードボタンを常時表示 */
+@media (hover: none) {
+  [data-id] .card-edit,
+  [data-id] .card-delete {
+    opacity: 1;
+  }
+}
+
+/* カンバン: モバイルでスクロールスナップ */
+@media (max-width: 639px) {
+  #kanban-view {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  #kanban-view > div {
+    scroll-snap-align: start;
+    min-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    flex-shrink: 0;
+  }
+}
+
+/* リスト: モバイルで先頭列を固定してテーブル横スクロール */
+@media (max-width: 639px) {
+  #list-view .overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #list-view table {
+    min-width: 580px;
+  }
+  #list-view .table th:first-child,
+  #list-view .table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+  #list-view .table th:first-child {
+    background: #f9fafb;
+  }
+  #list-view .table td:first-child {
+    background: #fff;
+  }
+  #list-view .table-zebra tbody tr:nth-child(even) td:first-child {
+    background: oklch(0.97 0.012 285);
+  }
+}
+
+/* ガントチャート: モバイルでコンパクト表示 */
+@media (max-width: 639px) {
+  .gantt-label-col {
+    width: 130px;
+    min-width: 130px;
+  }
+  .gantt-label-cell {
+    min-width: 130px;
+    max-width: 130px;
+    padding: 6px 8px;
+  }
+  .gantt-label-text {
+    max-width: 100px;
+  }
+  .gantt-day-header {
+    width: 26px;
+    min-width: 22px;
+    padding: 4px 1px;
+    font-size: 10px;
+  }
+  .gantt-nav {
+    padding: 10px 12px;
+    gap: 0.5rem;
+  }
+  .gantt-month-label {
+    font-size: 0.875rem;
+  }
+  .gantt-bar {
+    height: 18px;
+  }
+}

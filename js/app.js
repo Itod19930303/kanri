@@ -54,10 +54,18 @@ const App = (() => {
 
   function updateLabelFilter() {
     const allLabels = [...new Set(state.tickets.flatMap(t => t.labels))].sort();
+    const options = `<option value="">ラベル: すべて</option>` +
+      allLabels.map(l => `<option value="${escHtml(l)}">${escHtml(l)}</option>`).join('');
+
     const sel = document.getElementById('filter-label');
-    const cur = sel.value;
-    sel.innerHTML = `<option value="">ラベル: すべて</option>` +
-      allLabels.map(l => `<option value="${escHtml(l)}" ${cur === l ? 'selected' : ''}>${escHtml(l)}</option>`).join('');
+    sel.innerHTML = options;
+    sel.value = state.filterLabel;
+
+    const mobSel = document.getElementById('mob-filter-label');
+    if (mobSel) {
+      mobSel.innerHTML = options;
+      mobSel.value = state.filterLabel;
+    }
   }
 
   function setView(v) {
@@ -81,12 +89,33 @@ const App = (() => {
 
     document.getElementById('filter-priority').addEventListener('change', e => {
       state.filterPriority = e.target.value;
+      const mob = document.getElementById('mob-filter-priority');
+      if (mob) mob.value = e.target.value;
       render();
     });
 
     document.getElementById('filter-label').addEventListener('change', e => {
       state.filterLabel = e.target.value;
+      const mob = document.getElementById('mob-filter-label');
+      if (mob) mob.value = e.target.value;
       render();
+    });
+
+    document.getElementById('mob-filter-priority').addEventListener('change', e => {
+      state.filterPriority = e.target.value;
+      document.getElementById('filter-priority').value = e.target.value;
+      render();
+    });
+
+    document.getElementById('mob-filter-label').addEventListener('change', e => {
+      state.filterLabel = e.target.value;
+      document.getElementById('filter-label').value = e.target.value;
+      render();
+    });
+
+    document.getElementById('btn-filter-toggle').addEventListener('click', () => {
+      const panel = document.getElementById('mobile-filter-panel');
+      panel.classList.toggle('hidden');
     });
 
     // ラベル入力：Enter or カンマで追加
