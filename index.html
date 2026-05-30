@@ -46,6 +46,13 @@
         <option value="">ラベル: すべて</option>
       </select>
 
+      <!-- Mobile filter toggle -->
+      <button id="btn-filter-toggle" class="btn btn-ghost btn-sm sm:hidden" title="フィルター">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+      </button>
+
       <!-- View toggle -->
       <div class="join">
         <button id="btn-kanban" class="btn btn-sm join-item view-btn view-btn-active" title="カンバン">
@@ -85,6 +92,21 @@
       <input type="text" placeholder="検索…" class="bg-transparent outline-none text-sm w-full"
         oninput="document.getElementById('search-input').value=this.value;document.getElementById('search-input').dispatchEvent(new Event('input'))">
     </label>
+  </div>
+
+  <!-- Mobile filter panel -->
+  <div id="mobile-filter-panel" class="hidden sm:hidden px-4 pt-2 pb-1 max-w-screen-2xl mx-auto w-full">
+    <div class="flex gap-2">
+      <select id="mob-filter-priority" class="select select-bordered select-sm flex-1" style="border-color:#d1d7dc">
+        <option value="">優先度: すべて</option>
+        <option value="high">高</option>
+        <option value="medium">中</option>
+        <option value="low">低</option>
+      </select>
+      <select id="mob-filter-label" class="select select-bordered select-sm flex-1" style="border-color:#d1d7dc">
+        <option value="">ラベル: すべて</option>
+      </select>
+    </div>
   </div>
 
   <!-- Main content -->
