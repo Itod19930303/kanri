@@ -508,17 +508,55 @@ body {
   }
 }
 
-/* カンバン: モバイルでスクロールスナップ */
+/* ===== カンバンタブ（モバイル専用） ===== */
+.kanban-tabs-mobile {
+  display: none;
+}
+
 @media (max-width: 639px) {
-  #kanban-view {
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+  .kanban-tabs-mobile {
+    display: flex;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--udemy-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
   }
-  #kanban-view > div {
-    scroll-snap-align: start;
-    min-width: calc(100vw - 2rem) !important;
-    width: calc(100vw - 2rem) !important;
-    flex-shrink: 0;
+  .kanban-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--udemy-muted);
+    border-right: 1px solid var(--udemy-border);
+    transition: background 0.15s, color 0.15s;
+  }
+  .kanban-tab-btn:last-child {
+    border-right: none;
+  }
+  .kanban-tab-btn.kanban-tab-active {
+    background: var(--udemy-purple-pale);
+    color: var(--udemy-purple);
+  }
+  #kanban-view {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  #kanban-view > .kanban-column-wrapper {
+    display: none;
+    width: 100%;
+    min-width: 100%;
+  }
+  #kanban-view > .kanban-column-wrapper.kanban-col-active {
+    display: flex;
   }
 }
 
