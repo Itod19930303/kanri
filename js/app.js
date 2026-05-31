@@ -154,19 +154,24 @@ const App = (() => {
     });
 
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
-    document.getElementById('modal-delete').addEventListener('click', async () => {
-      if (state.editingId != null) {
-        const hasChildren = state.tickets.some(t => t.parentId === state.editingId);
-        if (hasChildren && !confirm('子課題が存在します。このチケットを削除しますか？（子課題の親は解除されます）')) return;
-        if (!hasChildren && !confirm('このチケットを削除しますか？')) return;
-        if (hasChildren) {
-          const children = state.tickets.filter(t => t.parentId === state.editingId);
-          await Promise.all(children.map(c => DB.update(c.id, { parentId: null })));
+    document.getElementById('modal-delete').addEventListener('click', () => {
+      if (state.editingId == null) return;
+      const id = state.editingId;
+      const ticket = state.tickets.find(t => t.id === id);
+      const hasChildren = state.tickets.some(t => t.parentId === id);
+      closeModal();
+      showDeleteModal(
+        `「${ticket ? escHtml(ticket.title) : 'このチケット'}」を削除しますか？`,
+        hasChildren ? '子課題が存在します。削除すると子課題の親は解除されます。' : null,
+        async () => {
+          if (hasChildren) {
+            const children = state.tickets.filter(t => t.parentId === id);
+            await Promise.all(children.map(c => DB.update(c.id, { parentId: null })));
+          }
+          await DB.delete(id);
+          await refresh();
         }
-        await DB.delete(state.editingId);
-        closeModal();
-        await refresh();
-      }
+      );
     });
   }
 
@@ -257,18 +262,36 @@ const App = (() => {
     currentLabels = [];
   }
 
-  async function deleteTicket(id) {
+  function deleteTicket(id) {
+    const ticket = state.tickets.find(t => t.id === id);
     const hasChildren = state.tickets.some(t => t.parentId === id);
-    const msg = hasChildren
-      ? 'このチケットを削除しますか？（子課題の親は解除されます）'
-      : 'このチケットを削除しますか？';
-    if (!confirm(msg)) return;
-    if (hasChildren) {
-      const children = state.tickets.filter(t => t.parentId === id);
-      await Promise.all(children.map(c => DB.update(c.id, { parentId: null })));
-    }
-    await DB.delete(id);
-    await refresh();
+    showDeleteModal(
+      `「${ticket ? escHtml(ticket.title) : 'このチケット'}」を削除しますか？`,
+      hasChildren ? '子課題が存在します。削除すると子課題の親は解除されます。' : null,
+      async () => {
+        if (hasChildren) {
+          const children = state.tickets.filter(t => t.parentId === id);
+          await Promise.all(children.map(c => DB.update(c.id, { parentId: null })));
+        }
+        await DB.delete(id);
+        await refresh();
+      }
+    );
+  }
+
+  function showDeleteModal(msg, sub, onConfirm) {
+    document.getElementById('delete-modal-msg').textContent = msg;
+    const subEl = document.getElementById('delete-modal-sub');
+    if (sub) { subEl.textContent = sub; subEl.style.display = ''; }
+    else { subEl.style.display = 'none'; }
+
+    const modal = document.getElementById('delete-modal');
+    const oldBtn = document.getElementById('delete-modal-confirm');
+    const newBtn = oldBtn.cloneNode(true);
+    oldBtn.replaceWith(newBtn);
+    newBtn.addEventListener('click', () => { modal.close(); onConfirm(); });
+    document.getElementById('delete-modal-cancel').onclick = () => modal.close();
+    modal.showModal();
   }
 
   return { init, refresh, render, openModal, deleteTicket };

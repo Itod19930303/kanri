@@ -63,6 +63,8 @@ function renderKanban(tickets, allTickets) {
       group: 'kanban',
       animation: 150,
       ghostClass: 'opacity-40',
+      delay: 200,
+      delayOnTouchOnly: true,
       onEnd: async (evt) => {
         const id = evt.item.dataset.id;
         const newStatus = evt.to.dataset.status;

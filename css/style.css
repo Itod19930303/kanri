@@ -500,8 +500,8 @@ body {
 
 /* ===== モバイル対応 ===== */
 
-/* タッチデバイス: カードボタンを常時表示 */
-@media (hover: none) {
+/* タッチデバイス・モバイル: カードボタンを常時表示 */
+@media (hover: none), (max-width: 639px) {
   [data-id] .card-edit,
   [data-id] .card-delete {
     opacity: 1;
