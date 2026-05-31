@@ -6,6 +6,7 @@ const KANBAN_COLUMNS = [
 ];
 
 let sortableInstances = [];
+let activeKanbanCol = 'todo';
 
 function renderKanban(tickets, allTickets) {
   const view = document.getElementById('kanban-view');
@@ -17,18 +18,34 @@ function renderKanban(tickets, allTickets) {
   // カンバンにはルート課題のみ表示（子・孫はカード内アコーディオン）
   const rootTickets = tickets.filter(t => {
     if (!t.parentId) return true;
-    // 親がフィルタ結果に含まれていれば非表示（親のカードに含まれるため）
     return !tickets.some(p => p.id === t.parentId);
   });
 
-  KANBAN_COLUMNS.forEach(col => {
-    const colTickets = rootTickets.filter(t => t.status === col.id);
+  const colData = KANBAN_COLUMNS.map(col => ({
+    ...col,
+    colTickets: rootTickets.filter(t => t.status === col.id)
+  }));
+
+  // モバイル用タブバー（デスクトップではCSS非表示）
+  const tabBar = document.createElement('div');
+  tabBar.className = 'kanban-tabs-mobile';
+  tabBar.innerHTML = colData.map(col => `
+    <button class="kanban-tab-btn${col.id === activeKanbanCol ? ' kanban-tab-active' : ''}" data-target-col="${col.id}">
+      <span class="col-count-badge ${col.colorClass}">${col.colTickets.length}</span>
+      <span>${col.label}</span>
+    </button>
+  `).join('');
+  view.appendChild(tabBar);
+
+  colData.forEach(col => {
+    const isActive = col.id === activeKanbanCol;
     const colEl = document.createElement('div');
-    colEl.className = 'flex flex-col gap-3 min-w-[280px] w-80';
+    colEl.className = `kanban-column-wrapper flex flex-col gap-3 min-w-[280px] w-80${isActive ? ' kanban-col-active' : ''}`;
+    colEl.dataset.colId = col.id;
     colEl.innerHTML = `
       <div class="flex items-center justify-between px-1">
         <div class="flex items-center gap-2">
-          <span class="col-count-badge ${col.colorClass}">${colTickets.length}</span>
+          <span class="col-count-badge ${col.colorClass}">${col.colTickets.length}</span>
           <h2 class="font-bold text-sm" style="color:#1c1d1f">${col.label}</h2>
         </div>
         <button class="btn btn-ghost btn-xs add-in-col" data-status="${col.id}" title="追加">
@@ -36,7 +53,7 @@ function renderKanban(tickets, allTickets) {
         </button>
       </div>
       <div class="kanban-col flex flex-col gap-2 min-h-[120px] rounded-xl p-2" data-status="${col.id}">
-        ${colTickets.map(t => ticketCard(t, allTickets)).join('')}
+        ${col.colTickets.map(t => ticketCard(t, allTickets)).join('')}
       </div>
     `;
     view.appendChild(colEl);
@@ -54,6 +71,18 @@ function renderKanban(tickets, allTickets) {
       }
     });
     sortableInstances.push(sortable);
+  });
+
+  // タブ切り替え
+  view.querySelectorAll('.kanban-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeKanbanCol = btn.dataset.targetCol;
+      view.querySelectorAll('.kanban-tab-btn').forEach(b => b.classList.remove('kanban-tab-active'));
+      btn.classList.add('kanban-tab-active');
+      view.querySelectorAll('.kanban-column-wrapper').forEach(col => {
+        col.classList.toggle('kanban-col-active', col.dataset.colId === activeKanbanCol);
+      });
+    });
   });
 
   view.querySelectorAll('.add-in-col').forEach(btn => {
