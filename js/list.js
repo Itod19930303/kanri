@@ -123,7 +123,7 @@ function renderList(tickets, allTickets) {
         arrow.textContent = '▶';
       } else {
         // 展開：直接の子行のみ表示（孫は閉じたまま）
-        childRows.forEach(row => { row.style.display = 'table-row'; });
+        childRows.forEach(row => { row.style.display = ''; });
         btn.dataset.open = '1';
         arrow.textContent = '▼';
       }

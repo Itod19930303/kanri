@@ -522,29 +522,62 @@ body {
   }
 }
 
-/* リスト: モバイルで先頭列を固定してテーブル横スクロール */
+/* リスト: モバイルでカードレイアウト */
 @media (max-width: 639px) {
   #list-view .overflow-x-auto {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: visible;
+    border-radius: 0;
+    background: transparent;
   }
-  #list-view table {
-    min-width: 580px;
+  #list-view table,
+  #list-view tbody {
+    display: block;
+    width: 100%;
   }
-  #list-view .table th:first-child,
-  #list-view .table td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
+  #list-view thead {
+    display: none;
   }
-  #list-view .table th:first-child {
-    background: #f9fafb;
-  }
-  #list-view .table td:first-child {
+  #list-view tr.list-row {
+    display: block;
+    border: 1px solid var(--udemy-border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
     background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-  #list-view .table-zebra tbody tr:nth-child(even) td:first-child {
-    background: oklch(0.97 0.012 285);
+  #list-view tr.list-row[data-parent-id]:not([data-parent-id=""]) {
+    margin-left: 16px;
+    border-left: 3px solid var(--udemy-purple-pale);
+  }
+  #list-view .table td {
+    display: block;
+    padding: 0;
+    border: none;
+    background: transparent !important;
+  }
+  #list-view .table td:first-child {
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  #list-view .table td:nth-child(2),
+  #list-view .table td:nth-child(3),
+  #list-view .table td:nth-child(4) {
+    display: inline-block;
+    margin-right: 8px;
+    margin-top: 4px;
+    vertical-align: middle;
+  }
+  #list-view .table td:nth-child(5) {
+    display: block;
+    margin-top: 4px;
+  }
+  #list-view .table td:last-child {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+    gap: 4px;
   }
 }
 
