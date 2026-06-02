@@ -23,5 +23,6 @@ const content = `window.KANRI_FIREBASE_CONFIG = {
 };
 `;
 
-fs.writeFileSync('js/firebase-config.js', content);
-console.log('[build-config] js/firebase-config.js を生成しました');
+fs.mkdirSync('public/js', { recursive: true });
+fs.writeFileSync('public/js/firebase-config.js', content);
+console.log('[build-config] public/js/firebase-config.js を生成しました');
