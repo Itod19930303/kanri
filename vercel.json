@@ -1,4 +1,6 @@
 {
-  "buildCommand": "node build-config.js",
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/js/firebase-config.js", "destination": "/api/firebase-config" }
+  ]
 }
