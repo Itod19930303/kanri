@@ -1,1 +1,3 @@
 *.png
+# Firebase設定は環境変数から生成するためgit管理しない
+js/firebase-config.js
