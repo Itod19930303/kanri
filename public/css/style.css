@@ -498,6 +498,116 @@ body {
   white-space: nowrap;
 }
 
+/* ===== プロジェクト一覧 ===== */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.project-card {
+  background: #fff;
+  border: 1px solid var(--udemy-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, transform 0.1s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.project-card:hover {
+  box-shadow: 0 6px 20px rgba(86,36,208,0.13);
+  transform: translateY(-2px);
+}
+
+.project-card-color-bar {
+  height: 5px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.project-card-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.project-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--udemy-text);
+  line-height: 1.4;
+}
+
+.project-card-desc {
+  font-size: 12px;
+  color: var(--udemy-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.project-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.project-ticket-count {
+  font-size: 12px;
+  color: var(--udemy-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.project-card-arrow {
+  color: var(--udemy-border);
+  transition: color 0.15s, transform 0.15s;
+}
+.project-card:hover .project-card-arrow {
+  color: var(--udemy-purple);
+  transform: translateX(3px);
+}
+
+.project-card-actions {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.project-card:hover .project-card-actions {
+  opacity: 1;
+}
+
+/* カラースウォッチ */
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+  flex-shrink: 0;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+.color-swatch-active {
+  border-color: var(--udemy-text) !important;
+  transform: scale(1.1);
+}
+
+/* モバイル: カードアクション常時表示 */
+@media (hover: none), (max-width: 639px) {
+  .project-card-actions {
+    opacity: 1;
+  }
+}
+
 /* ===== モバイル対応 ===== */
 
 /* タッチデバイス・モバイル: カードボタンを常時表示 */
