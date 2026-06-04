@@ -19,7 +19,7 @@ const App = (() => {
   let editingProjectId = null;
   let selectedProjectColor = PROJECT_COLORS[0];
 
-  const VIEWS = ['kanban', 'list', 'gantt'];
+  const VIEWS = ['dashboard', 'kanban', 'list', 'gantt'];
 
   // ===== 初期化 =====
 
@@ -54,7 +54,8 @@ const App = (() => {
       else el.classList.add('hidden');
     });
 
-    if (state.view === 'kanban') renderKanban(filtered, state.tickets);
+    if (state.view === 'dashboard') renderDashboard(filtered);
+    else if (state.view === 'kanban') renderKanban(filtered, state.tickets);
     else if (state.view === 'list') renderList(filtered, state.tickets);
     else if (state.view === 'gantt') renderGantt(filtered);
 
@@ -329,6 +330,7 @@ const App = (() => {
   // ===== チケットイベント =====
 
   function bindEvents() {
+    document.getElementById('btn-dashboard').addEventListener('click', () => setView('dashboard'));
     document.getElementById('btn-kanban').addEventListener('click', () => setView('kanban'));
     document.getElementById('btn-list').addEventListener('click', () => setView('list'));
     document.getElementById('btn-gantt').addEventListener('click', () => setView('gantt'));

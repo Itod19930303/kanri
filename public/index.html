@@ -82,6 +82,11 @@
 
           <!-- View toggle -->
           <div class="join">
+            <button id="btn-dashboard" class="btn btn-sm join-item view-btn" title="ダッシュボード">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+              </svg>
+            </button>
             <button id="btn-kanban" class="btn btn-sm join-item view-btn view-btn-active" title="カンバン">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
@@ -144,6 +149,7 @@
     <div id="project-view"></div>
 
     <!-- Ticket views (hidden until entering a project) -->
+    <div id="dashboard-view" class="hidden"></div>
     <div id="kanban-view" class="hidden flex gap-4 items-start"></div>
     <div id="list-view" class="hidden"></div>
     <div id="gantt-view" class="hidden"></div>
@@ -284,6 +290,7 @@
   <script src="js/kanban.js"></script>
   <script src="js/list.js"></script>
   <script src="js/gantt.js"></script>
+  <script src="js/dashboard.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
