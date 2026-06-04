@@ -13,13 +13,20 @@ const toAppTicket = ticket => ({
   ...ticket,
   id: String(ticket.id),
   parentId: ticket.parentId == null || ticket.parentId === '' ? null : String(ticket.parentId),
+  projectId: ticket.projectId || null,
   labels: Array.isArray(ticket.labels) ? ticket.labels : []
 });
 
 const toStoredTicket = ticket => ({
   ...ticket,
   parentId: ticket.parentId == null || ticket.parentId === '' ? null : String(ticket.parentId),
+  projectId: ticket.projectId || null,
   labels: Array.isArray(ticket.labels) ? ticket.labels : []
+});
+
+const toAppProject = project => ({
+  ...project,
+  id: String(project.id)
 });
 
 function createDexieStore() {
@@ -29,6 +36,10 @@ function createDexieStore() {
   });
   db.version(2).stores({
     tickets: '++id, status, priority, dueDate, createdAt, parentId'
+  });
+  db.version(3).stores({
+    tickets: '++id, status, priority, dueDate, createdAt, parentId, projectId',
+    projects: '++id, name, createdAt'
   });
 
   const toDexieId = id => {
@@ -58,6 +69,20 @@ function createDexieStore() {
     },
     async delete(id) {
       return await db.tickets.delete(toDexieId(id));
+    },
+    async getProjects() {
+      return (await db.projects.toArray()).map(toAppProject);
+    },
+    async addProject(project) {
+      const now = new Date().toISOString();
+      const id = await db.projects.add({ ...project, createdAt: now, updatedAt: now });
+      return String(id);
+    },
+    async updateProject(id, changes) {
+      return await db.projects.update(toDexieId(id), { ...changes, updatedAt: new Date().toISOString() });
+    },
+    async deleteProject(id) {
+      return await db.projects.delete(toDexieId(id));
     }
   };
 }
@@ -68,17 +93,18 @@ function createFirestoreStore() {
   }
 
   const firestore = firebase.firestore();
-  const collection = firestore.collection('tickets');
+  const ticketsCol = firestore.collection('tickets');
+  const projectsCol = firestore.collection('projects');
 
   return {
     mode: 'firestore',
     async getAll() {
-      const snapshot = await collection.orderBy('createdAt', 'asc').get();
+      const snapshot = await ticketsCol.orderBy('createdAt', 'asc').get();
       return snapshot.docs.map(doc => toAppTicket({ id: doc.id, ...doc.data() }));
     },
     async add(ticket) {
       const now = new Date().toISOString();
-      const docRef = await collection.add({
+      const docRef = await ticketsCol.add({
         ...toStoredTicket(ticket),
         createdAt: now,
         updatedAt: now
@@ -86,13 +112,28 @@ function createFirestoreStore() {
       return docRef.id;
     },
     async update(id, changes) {
-      return await collection.doc(String(id)).update({
+      return await ticketsCol.doc(String(id)).update({
         ...toStoredTicket(changes),
         updatedAt: new Date().toISOString()
       });
     },
     async delete(id) {
-      return await collection.doc(String(id)).delete();
+      return await ticketsCol.doc(String(id)).delete();
+    },
+    async getProjects() {
+      const snapshot = await projectsCol.orderBy('createdAt', 'asc').get();
+      return snapshot.docs.map(doc => toAppProject({ id: doc.id, ...doc.data() }));
+    },
+    async addProject(project) {
+      const now = new Date().toISOString();
+      const docRef = await projectsCol.add({ ...project, createdAt: now, updatedAt: now });
+      return docRef.id;
+    },
+    async updateProject(id, changes) {
+      return await projectsCol.doc(String(id)).update({ ...changes, updatedAt: new Date().toISOString() });
+    },
+    async deleteProject(id) {
+      return await projectsCol.doc(String(id)).delete();
     }
   };
 }
