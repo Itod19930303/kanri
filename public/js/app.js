@@ -1,3 +1,6 @@
+let _currentUserId = null;
+let _currentUserEmail = '';
+
 const PROJECT_COLORS = [
   '#5624d0', '#2563eb', '#059669', '#d97706',
   '#dc2626', '#7c3aed', '#db2777', '#0891b2'
@@ -7,6 +10,7 @@ const App = (() => {
   let state = {
     tickets: [],
     projects: [],
+    pendingInvites: [],
     currentProjectId: null,
     view: 'kanban',
     search: '',
@@ -18,6 +22,7 @@ const App = (() => {
   let currentLabels = [];
   let editingProjectId = null;
   let selectedProjectColor = PROJECT_COLORS[0];
+  let _inviteProjectId = null;
   let _eventsBound = false;
 
   const VIEWS = ['dashboard', 'kanban', 'list', 'gantt'];
@@ -41,6 +46,7 @@ const App = (() => {
 
     state.projects = await DB.getProjects();
     state.tickets = await DB.getAll();
+    state.pendingInvites = DB.mode === 'firestore' ? await DB.getMyInvites() : [];
     showProjectListUI();
     renderProjectList();
   }
@@ -48,6 +54,7 @@ const App = (() => {
   async function refresh() {
     state.projects = await DB.getProjects();
     state.tickets = await DB.getAll();
+    if (DB.mode === 'firestore') state.pendingInvites = await DB.getMyInvites();
     if (state.currentProjectId == null) {
       renderProjectList();
     } else {
@@ -164,8 +171,9 @@ const App = (() => {
 
   function renderProjectList() {
     const container = document.getElementById('project-view');
+    const hasInvites = state.pendingInvites.length > 0;
 
-    if (state.projects.length === 0) {
+    if (state.projects.length === 0 && !hasInvites) {
       container.innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 text-center">
           <div class="rounded-full p-5 mb-5" style="background:#ede9fe">
@@ -187,16 +195,19 @@ const App = (() => {
     }
 
     container.innerHTML = `
-      <div class="mb-5">
-        <h2 class="text-xl font-bold" style="color:#1c1d1f">プロジェクト一覧</h2>
-        <p class="text-sm mt-0.5" style="color:#6a6f73">${state.projects.length} 件のプロジェクト</p>
-      </div>
-      <div class="project-grid">
-        ${state.projects.map(p => {
-          const count = state.tickets.filter(t => t.projectId === p.id).length;
-          return renderProjectCard(p, count);
-        }).join('')}
-      </div>`;
+      ${hasInvites ? renderPendingInviteNotifications() : ''}
+      ${state.projects.length > 0 ? `
+        <div class="mb-5">
+          <h2 class="text-xl font-bold" style="color:#1c1d1f">プロジェクト一覧</h2>
+          <p class="text-sm mt-0.5" style="color:#6a6f73">${state.projects.length} 件のプロジェクト</p>
+        </div>
+        <div class="project-grid">
+          ${state.projects.map(p => {
+            const count = state.tickets.filter(t => t.projectId === p.id).length;
+            return renderProjectCard(p, count);
+          }).join('')}
+        </div>
+      ` : ''}`;
 
     container.querySelectorAll('.project-card').forEach(card => {
       card.addEventListener('click', () => enterProject(card.dataset.projectId));
@@ -207,10 +218,84 @@ const App = (() => {
     container.querySelectorAll('.project-delete-btn').forEach(btn => {
       btn.addEventListener('click', e => { e.stopPropagation(); deleteProjectWithConfirm(btn.dataset.id); });
     });
+    container.querySelectorAll('.project-invite-btn').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); openInviteModal(btn.dataset.id); });
+    });
+    container.querySelectorAll('.btn-accept-invite').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await DB.acceptInvite(btn.dataset.inviteId, btn.dataset.projectId);
+          await refresh();
+        } catch (e) {
+          btn.disabled = false;
+        }
+      });
+    });
+    container.querySelectorAll('.btn-decline-invite').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await DB.declineInvite(btn.dataset.inviteId);
+          await refresh();
+        } catch (e) {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  function renderPendingInviteNotifications() {
+    return `
+      <div class="mb-6">
+        <h2 class="text-base font-bold mb-3" style="color:#1c1d1f">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" style="color:#5624d0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          招待の通知 (${state.pendingInvites.length}件)
+        </h2>
+        ${state.pendingInvites.map(inv => `
+          <div class="invite-notification-card">
+            <div class="invite-color-dot" style="background:${escHtml(inv.projectColor || '#5624d0')}"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold" style="color:#1c1d1f">${escHtml(inv.projectName || '')}</p>
+              <p class="text-xs mt-0.5" style="color:#6a6f73">${escHtml(inv.inviterEmail || '')} から招待されました</p>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button class="btn btn-xs btn-accept-invite text-white"
+                data-invite-id="${inv.id}" data-project-id="${escHtml(inv.projectId)}"
+                style="background:#5624d0;border-color:#5624d0">承諾</button>
+              <button class="btn btn-xs btn-decline-invite"
+                data-invite-id="${inv.id}"
+                style="background:#f3f0ff;border-color:#c4b5fd;color:#5624d0">辞退</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
   }
 
   function renderProjectCard(project, ticketCount) {
     const color = project.color || PROJECT_COLORS[0];
+    const isOwner = DB.mode !== 'firestore' || project.userId === _currentUserId;
+    const memberCount = (project.memberIds || []).length;
+
+    const ownerButtons = `
+      <button class="project-invite-btn btn btn-ghost btn-xs" data-id="${project.id}" title="メンバー管理" onclick="event.stopPropagation()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+      <button class="project-edit-btn btn btn-ghost btn-xs" data-id="${project.id}" title="編集" onclick="event.stopPropagation()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+      </button>
+      <button class="project-delete-btn btn btn-ghost btn-xs" data-id="${project.id}" title="削除" onclick="event.stopPropagation()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </button>`;
+
     return `
       <div class="project-card" data-project-id="${project.id}">
         <div class="project-card-color-bar" style="background:${color}"></div>
@@ -218,26 +303,27 @@ const App = (() => {
           <div class="flex items-start justify-between gap-2 mb-3">
             <h3 class="project-card-title line-clamp-2">${escHtml(project.name)}</h3>
             <div class="flex gap-1 flex-shrink-0 project-card-actions">
-              <button class="project-edit-btn btn btn-ghost btn-xs" data-id="${project.id}" title="編集" onclick="event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-              </button>
-              <button class="project-delete-btn btn btn-ghost btn-xs" data-id="${project.id}" title="削除" onclick="event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
+              ${isOwner ? ownerButtons : '<span class="project-shared-badge">共有</span>'}
             </div>
           </div>
           ${project.description ? `<p class="project-card-desc line-clamp-2">${escHtml(project.description)}</p>` : ''}
           <div class="project-card-footer">
-            <span class="project-ticket-count">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-              </svg>
-              ${ticketCount} チケット
-            </span>
+            <div class="flex items-center gap-3">
+              <span class="project-ticket-count">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                ${ticketCount} チケット
+              </span>
+              ${memberCount > 0 ? `
+                <span class="project-member-count">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                  </svg>
+                  ${memberCount + 1}人
+                </span>
+              ` : ''}
+            </div>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 project-card-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
@@ -286,6 +372,10 @@ const App = (() => {
   function bindProjectEvents() {
     document.getElementById('btn-new-project').addEventListener('click', () => openProjectModal(null));
     document.getElementById('btn-back').addEventListener('click', backToProjects);
+    document.getElementById('invite-modal-close').addEventListener('click', () => {
+      document.getElementById('invite-modal').close();
+      _inviteProjectId = null;
+    });
 
     document.getElementById('project-modal-cancel').addEventListener('click', () => {
       document.getElementById('project-modal').close();
@@ -338,6 +428,137 @@ const App = (() => {
         await refresh();
       }
     );
+  }
+
+  // ===== 招待モーダル =====
+
+  async function openInviteModal(projectId) {
+    _inviteProjectId = projectId;
+    const project = state.projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    document.getElementById('invite-modal-title').textContent = `メンバー管理 — ${project.name}`;
+    document.getElementById('invite-modal-content').innerHTML =
+      `<div class="text-center py-6"><span class="loading loading-spinner" style="color:#5624d0"></span></div>`;
+    document.getElementById('invite-modal').showModal();
+
+    await renderInviteModalContent(project);
+  }
+
+  async function renderInviteModalContent(project) {
+    const contentEl = document.getElementById('invite-modal-content');
+    let projectInvites = [];
+    try {
+      projectInvites = await DB.getProjectInvites(project.id);
+    } catch (e) {
+      console.warn('招待の取得に失敗:', e);
+    }
+
+    const pendingInvites = projectInvites.filter(i => i.status === 'pending');
+    const members = Object.entries(project.memberDetails || {}).map(([uid, det]) => ({ uid, email: det.email || '' }));
+
+    contentEl.innerHTML = `
+      <div class="mb-4">
+        <p class="invite-section-label">メンバー (${members.length + 1}人)</p>
+        <div class="member-item">
+          <div class="member-avatar">${(_currentUserEmail || '?').charAt(0).toUpperCase()}</div>
+          <span class="text-sm flex-1 truncate" style="color:#1c1d1f">${escHtml(_currentUserEmail || '')}</span>
+          <span class="invite-badge invite-badge-owner">オーナー</span>
+        </div>
+        ${members.map(m => `
+          <div class="member-item">
+            <div class="member-avatar member-avatar-member">${(m.email || '?').charAt(0).toUpperCase()}</div>
+            <span class="text-sm flex-1 truncate" style="color:#1c1d1f">${escHtml(m.email)}</span>
+            <button class="btn btn-ghost btn-xs text-error btn-remove-member" data-uid="${m.uid}" data-project-id="${project.id}" title="削除">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+              </svg>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+
+      ${pendingInvites.length > 0 ? `
+        <div class="mb-4">
+          <p class="invite-section-label">招待済み (${pendingInvites.length}件)</p>
+          ${pendingInvites.map(inv => `
+            <div class="member-item">
+              <div class="member-avatar member-avatar-pending">${(inv.inviteeEmail || '?').charAt(0).toUpperCase()}</div>
+              <span class="text-sm flex-1 truncate" style="color:#1c1d1f">${escHtml(inv.inviteeEmail)}</span>
+              <span class="invite-badge invite-badge-pending mr-2">招待中</span>
+              <button class="btn btn-ghost btn-xs btn-cancel-invite" data-invite-id="${inv.id}" title="キャンセル">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <div style="border-top:1px solid #e5e0f8;padding-top:16px">
+        <p class="invite-section-label">メンバーを招待</p>
+        <form id="invite-send-form" class="flex gap-2">
+          <input id="invite-email-input" type="email" placeholder="メールアドレスを入力"
+            class="input input-bordered input-sm flex-1" required>
+          <button type="submit" class="btn btn-sm text-white" style="background:#5624d0;border-color:#5624d0">招待</button>
+        </form>
+        <p id="invite-send-msg" class="hidden text-xs mt-2"></p>
+      </div>`;
+
+    contentEl.querySelectorAll('.btn-remove-member').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('このメンバーをプロジェクトから削除しますか？')) return;
+        btn.disabled = true;
+        try {
+          await DB.removeMember(btn.dataset.projectId, btn.dataset.uid);
+          state.projects = await DB.getProjects();
+          const updated = state.projects.find(p => p.id === project.id);
+          if (updated) await renderInviteModalContent(updated);
+        } catch (e) {
+          btn.disabled = false;
+          showInviteMsg('削除に失敗しました: ' + e.message, false);
+        }
+      });
+    });
+
+    contentEl.querySelectorAll('.btn-cancel-invite').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await DB.cancelInvite(btn.dataset.inviteId);
+          await renderInviteModalContent(project);
+        } catch (e) {
+          btn.disabled = false;
+          showInviteMsg('キャンセルに失敗しました: ' + e.message, false);
+        }
+      });
+    });
+
+    document.getElementById('invite-send-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const emailInput = document.getElementById('invite-email-input');
+      const email = emailInput.value.trim();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      try {
+        await DB.sendInvite(project.id, project.name, project.color, email);
+        emailInput.value = '';
+        showInviteMsg(`${email} に招待を送りました`, true);
+        await renderInviteModalContent(project);
+      } catch (err) {
+        showInviteMsg('招待の送信に失敗しました: ' + err.message, false);
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  function showInviteMsg(msg, isSuccess) {
+    const el = document.getElementById('invite-send-msg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isSuccess ? '#059669' : '#ef4444';
+    el.classList.remove('hidden');
   }
 
   // ===== チケットイベント =====
@@ -562,7 +783,7 @@ const App = (() => {
     modal.showModal();
   }
 
-  return { init, refresh, render, openModal, deleteTicket, enterProject, backToProjects, openProjectModal, showProjectListUI };
+  return { init, refresh, render, openModal, deleteTicket, enterProject, backToProjects, openProjectModal, openInviteModal, showProjectListUI };
 })();
 
 // ===== 階層ユーティリティ（グローバル） =====
@@ -595,7 +816,9 @@ function handleAuthState(user) {
     (async () => {
       if (user.uid !== _lastUserId) {
         _lastUserId = user.uid;
-        initDB(user.uid);
+        _currentUserId = user.uid;
+        _currentUserEmail = user.email || '';
+        initDB(user.uid, user.email || '');
 
         // 初回ログイン時: userId なし既存データを現在ユーザーへ移行
         const migKey = `kanri_migrated_${user.uid}`;
@@ -603,7 +826,6 @@ function handleAuthState(user) {
           try {
             await DB.migrateOrphanedData();
           } catch (e) {
-            // セキュリティルール適用済みの場合は失敗しても問題なし
             console.warn('データ移行をスキップしました:', e.message);
           }
           localStorage.setItem(migKey, '1');
@@ -615,6 +837,8 @@ function handleAuthState(user) {
     })();
   } else {
     _lastUserId = null;
+    _currentUserId = null;
+    _currentUserEmail = '';
     clearUserUI();
     showLoginUI();
   }
