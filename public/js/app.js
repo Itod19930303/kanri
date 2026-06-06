@@ -18,16 +18,29 @@ const App = (() => {
   let currentLabels = [];
   let editingProjectId = null;
   let selectedProjectColor = PROJECT_COLORS[0];
+  let _eventsBound = false;
 
   const VIEWS = ['dashboard', 'kanban', 'list', 'gantt'];
 
   // ===== 初期化 =====
 
   async function init() {
+    // ユーザー切り替え時に状態をリセット
+    state.currentProjectId = null;
+    state.view = 'kanban';
+    state.search = '';
+    state.filterPriority = '';
+    state.filterLabel = '';
+    state.editingId = null;
+
+    if (!_eventsBound) {
+      _eventsBound = true;
+      bindEvents();
+      bindProjectEvents();
+    }
+
     state.projects = await DB.getProjects();
     state.tickets = await DB.getAll();
-    bindEvents();
-    bindProjectEvents();
     showProjectListUI();
     renderProjectList();
   }
@@ -549,7 +562,7 @@ const App = (() => {
     modal.showModal();
   }
 
-  return { init, refresh, render, openModal, deleteTicket, enterProject, backToProjects, openProjectModal };
+  return { init, refresh, render, openModal, deleteTicket, enterProject, backToProjects, openProjectModal, showProjectListUI };
 })();
 
 // ===== 階層ユーティリティ（グローバル） =====
@@ -573,4 +586,127 @@ function isDescendant(ticketId, ancestorId, tickets) {
   return false;
 }
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+// ===== 認証 =====
+
+let _lastUserId = null;
+
+function handleAuthState(user) {
+  if (user) {
+    if (user.uid !== _lastUserId) {
+      _lastUserId = user.uid;
+      initDB(user.uid);
+    }
+    document.getElementById('login-screen').classList.add('hidden');
+    updateUserUI(user);
+    App.init();
+  } else {
+    _lastUserId = null;
+    clearUserUI();
+    showLoginUI();
+  }
+}
+
+function showLoginUI() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-loading').classList.add('hidden');
+  document.getElementById('login-form-container').classList.remove('hidden');
+}
+
+function updateUserUI(user) {
+  const infoEl = document.getElementById('user-info');
+  const avatarEl = document.getElementById('user-avatar');
+  infoEl.classList.remove('hidden');
+  infoEl.style.display = 'flex';
+  if (user.photoURL) {
+    avatarEl.innerHTML = `<img src="${escSrc(user.photoURL)}" class="w-full h-full object-cover" alt="">`;
+  } else {
+    avatarEl.textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+  }
+  const nameEl = document.getElementById('user-display-name');
+  if (nameEl) nameEl.textContent = user.displayName || user.email || '';
+}
+
+function clearUserUI() {
+  const infoEl = document.getElementById('user-info');
+  if (infoEl) { infoEl.classList.add('hidden'); infoEl.style.display = ''; }
+}
+
+const AUTH_ERRORS = {
+  'auth/invalid-credential':    'メールアドレスまたはパスワードが間違っています',
+  'auth/email-already-in-use':  'このメールアドレスは既に使用されています',
+  'auth/invalid-email':         'メールアドレスの形式が正しくありません',
+  'auth/weak-password':         'パスワードは6文字以上で設定してください',
+  'auth/user-not-found':        'メールアドレスまたはパスワードが間違っています',
+  'auth/wrong-password':        'メールアドレスまたはパスワードが間違っています',
+  'auth/too-many-requests':     'ログイン試行回数が多すぎます。しばらくお待ちください',
+  'auth/popup-closed-by-user':  'サインインがキャンセルされました',
+  'auth/network-request-failed':'ネットワークエラーが発生しました',
+};
+
+function setLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('hidden', !msg);
+}
+
+function escSrc(url) {
+  return url.replace(/"/g, '%22');
+}
+
+function bindLoginFormEvents() {
+  let isSignupMode = false;
+
+  document.getElementById('btn-google-signin')?.addEventListener('click', async () => {
+    setLoginError('');
+    try {
+      await Auth.signInWithGoogle();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user') setLoginError(AUTH_ERRORS[e.code] || '認証エラーが発生しました');
+    }
+  });
+
+  document.getElementById('login-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    setLoginError('');
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-submit-btn');
+    btn.disabled = true;
+    try {
+      if (isSignupMode) {
+        await Auth.signUpWithEmail(email, password);
+      } else {
+        await Auth.signInWithEmail(email, password);
+      }
+    } catch (e) {
+      setLoginError(AUTH_ERRORS[e.code] || '認証エラーが発生しました');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('login-toggle-btn')?.addEventListener('click', () => {
+    isSignupMode = !isSignupMode;
+    document.getElementById('login-submit-btn').textContent = isSignupMode ? '新規登録' : 'ログイン';
+    document.getElementById('login-toggle-label').textContent = isSignupMode ? 'すでにアカウントをお持ちの方は' : 'アカウントをお持ちでない方は';
+    document.getElementById('login-toggle-btn').textContent = isSignupMode ? 'ログイン' : '新規登録';
+    setLoginError('');
+  });
+
+  document.getElementById('btn-logout')?.addEventListener('click', async () => {
+    await Auth.signOut();
+    App.showProjectListUI();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (Auth.isAvailable()) {
+    bindLoginFormEvents();
+    Auth.onAuthStateChanged(handleAuthState);
+  } else {
+    initDB(null);
+    document.getElementById('login-screen').classList.add('hidden');
+    App.init();
+  }
+});
