@@ -592,13 +592,27 @@ let _lastUserId = null;
 
 function handleAuthState(user) {
   if (user) {
-    if (user.uid !== _lastUserId) {
-      _lastUserId = user.uid;
-      initDB(user.uid);
-    }
-    document.getElementById('login-screen').classList.add('hidden');
-    updateUserUI(user);
-    App.init();
+    (async () => {
+      if (user.uid !== _lastUserId) {
+        _lastUserId = user.uid;
+        initDB(user.uid);
+
+        // 初回ログイン時: userId なし既存データを現在ユーザーへ移行
+        const migKey = `kanri_migrated_${user.uid}`;
+        if (!localStorage.getItem(migKey) && DB && typeof DB.migrateOrphanedData === 'function') {
+          try {
+            await DB.migrateOrphanedData();
+          } catch (e) {
+            // セキュリティルール適用済みの場合は失敗しても問題なし
+            console.warn('データ移行をスキップしました:', e.message);
+          }
+          localStorage.setItem(migKey, '1');
+        }
+      }
+      updateUserUI(user);
+      await App.init();
+      document.getElementById('login-screen').classList.add('hidden');
+    })();
   } else {
     _lastUserId = null;
     clearUserUI();

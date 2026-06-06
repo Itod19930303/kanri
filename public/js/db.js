@@ -115,6 +115,26 @@ function createFirestoreStore(userId) {
     },
     async deleteProject(id) {
       return await projectsCol.doc(String(id)).delete();
+    },
+    // userId なしのドキュメントを初回ログイン時に現在ユーザーへ移行
+    async migrateOrphanedData() {
+      const [tSnap, pSnap] = await Promise.all([
+        fs.collection('tickets').get(),
+        fs.collection('projects').get()
+      ]);
+      const batch = fs.batch();
+      let count = 0;
+      tSnap.docs.forEach(d => {
+        if (!d.data().userId) { batch.update(d.ref, { userId }); count++; }
+      });
+      pSnap.docs.forEach(d => {
+        if (!d.data().userId) { batch.update(d.ref, { userId }); count++; }
+      });
+      if (count > 0) {
+        await batch.commit();
+        console.info(`データ移行: ${count} 件を現在のユーザーに関連付けました。`);
+      }
+      return count;
     }
   };
 }
