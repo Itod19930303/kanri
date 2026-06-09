@@ -46,7 +46,11 @@ const App = (() => {
 
     state.projects = await DB.getProjects();
     state.tickets = await DB.getAll();
-    state.pendingInvites = DB.mode === 'firestore' ? await DB.getMyInvites() : [];
+    try {
+      state.pendingInvites = DB.mode === 'firestore' ? await DB.getMyInvites() : [];
+    } catch (e) {
+      state.pendingInvites = [];
+    }
     showProjectListUI();
     renderProjectList();
   }
@@ -54,7 +58,9 @@ const App = (() => {
   async function refresh() {
     state.projects = await DB.getProjects();
     state.tickets = await DB.getAll();
-    if (DB.mode === 'firestore') state.pendingInvites = await DB.getMyInvites();
+    if (DB.mode === 'firestore') {
+      try { state.pendingInvites = await DB.getMyInvites(); } catch (e) {}
+    }
     if (state.currentProjectId == null) {
       renderProjectList();
     } else {
@@ -832,7 +838,11 @@ function handleAuthState(user) {
         }
       }
       updateUserUI(user);
-      await App.init();
+      try {
+        await App.init();
+      } catch (e) {
+        console.error('初期化エラー:', e);
+      }
       document.getElementById('login-screen').classList.add('hidden');
     })();
   } else {
