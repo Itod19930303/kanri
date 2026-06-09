@@ -4,9 +4,14 @@ function renderList(tickets, allTickets) {
   const view = document.getElementById('list-view');
 
   const STATUS_LABEL = { not_started: '未着手', todo: 'Todo', in_progress: '進行中', done: '完了' };
-  const STATUS_BADGE = { not_started: 'badge-ghost', todo: 'badge-neutral', in_progress: 'badge-info', done: 'badge-success' };
+  const STATUS_STYLE = {
+    not_started: 'background:#e5e7eb;color:#374151',
+    todo:        'background:#dbeafe;color:#1d4ed8',
+    in_progress: 'background:#fef3c7;color:#92400e',
+    done:        'background:#dcfce7;color:#166534',
+  };
   const PRI_LABEL = { high: '高', medium: '中', low: '低' };
-  const PRI_CLASS = { high: 'text-error', medium: 'text-warning', low: 'text-success' };
+  const PRI_STYLE = { high: 'color:#ef4444;font-weight:700', medium: 'color:#d97706;font-weight:700', low: 'color:#059669;font-weight:700' };
 
   const ordered = buildTree(tickets, allTickets);
 
@@ -20,16 +25,16 @@ function renderList(tickets, allTickets) {
   ];
 
   view.innerHTML = `
-    <div class="overflow-x-auto rounded-xl">
-      <table class="table table-zebra w-full">
+    <div class="overflow-x-auto rounded-xl list-table-wrap">
+      <table class="table w-full">
         <thead>
-          <tr>
+          <tr class="list-thead-row">
             ${cols.map(c => `
-              <th class="${c.noSort ? '' : 'cursor-pointer select-none hover:bg-base-200'}" data-col="${c.key}">
+              <th class="list-th${c.noSort ? '' : ' list-th-sortable'}" data-col="${c.key}">
                 <span class="flex items-center gap-1">
                   ${c.label}
                   ${!c.noSort && sortState.col === c.key
-                    ? `<span class="text-xs">${sortState.asc ? '▲' : '▼'}</span>` : ''}
+                    ? `<span class="text-xs" style="color:#5624d0">${sortState.asc ? '▲' : '▼'}</span>` : ''}
                 </span>
               </th>
             `).join('')}
@@ -69,8 +74,13 @@ function renderList(tickets, allTickets) {
                       </div>
                     </div>
                   </td>
-                  <td><span class="badge ${STATUS_BADGE[t.status]} badge-sm">${STATUS_LABEL[t.status] || t.status}</span></td>
-                  <td><span class="font-medium text-sm ${PRI_CLASS[t.priority] || ''}">${PRI_LABEL[t.priority] || ''}</span></td>
+                  <td>
+                    <button class="list-status-btn" data-status-btn data-id="${t.id}" data-status="${t.status}"
+                      style="${STATUS_STYLE[t.status] || 'background:#e5e7eb;color:#374151'}">
+                      ${STATUS_LABEL[t.status] || t.status}
+                    </button>
+                  </td>
+                  <td><span class="text-sm" style="${PRI_STYLE[t.priority] || 'color:#6b7280'}">${PRI_LABEL[t.priority] || '—'}</span></td>
                   <td><span class="${overdue ? 'text-error font-bold' : ''}">${t.dueDate || '—'}</span></td>
                   <td><div class="flex flex-wrap gap-1">${(t.labels || []).map(l => `<span class="badge badge-outline badge-xs">${escHtml(l)}</span>`).join('')}</div></td>
                   <td>
@@ -130,6 +140,9 @@ function renderList(tickets, allTickets) {
     });
   });
 
+  view.querySelectorAll('[data-status-btn]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); showStatusPicker(btn, btn.dataset.id, btn.dataset.status); });
+  });
   view.querySelectorAll('.list-add-child').forEach(btn => {
     btn.addEventListener('click', () => App.openModal(null, 'not_started', btn.dataset.id));
   });

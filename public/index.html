@@ -293,6 +293,18 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
+  <!-- 招待管理モーダル -->
+  <dialog id="invite-modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box" style="background:#fff; max-width:480px">
+      <h3 class="font-bold text-lg mb-4" id="invite-modal-title" style="color:#1c1d1f">メンバー管理</h3>
+      <div id="invite-modal-content"></div>
+      <div class="flex justify-end mt-5">
+        <button type="button" id="invite-modal-close" class="btn btn-sm" style="background:#f3f0ff;border-color:#c4b5fd;color:#5624d0">閉じる</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
   <!-- ログイン画面 -->
   <div id="login-screen" class="login-screen-overlay">
     <div class="login-card">

@@ -36,5 +36,10 @@ const Auth = (() => {
     return firebase.auth().signOut();
   }
 
-  return { isAvailable, onAuthStateChanged, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut };
+  function currentUser() {
+    if (!isAvailable()) return null;
+    return firebase.auth().currentUser;
+  }
+
+  return { isAvailable, onAuthStateChanged, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, currentUser };
 })();
