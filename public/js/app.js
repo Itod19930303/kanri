@@ -40,24 +40,21 @@ const App = (() => {
 
     if (!_eventsBound) {
       _eventsBound = true;
-      bindEvents();
-      bindProjectEvents();
+      try { bindEvents(); } catch (e) { console.error('bindEvents失敗:', e); }
+      try { bindProjectEvents(); } catch (e) { console.error('bindProjectEvents失敗:', e); }
     }
 
-    state.projects = await DB.getProjects();
-    state.tickets = await DB.getAll();
-    try {
-      state.pendingInvites = DB.mode === 'firestore' ? await DB.getMyInvites() : [];
-    } catch (e) {
-      state.pendingInvites = [];
-    }
+    try { state.projects = await DB.getProjects(); } catch (e) { console.error('getProjects失敗:', e); state.projects = []; }
+    try { state.tickets = await DB.getAll(); } catch (e) { console.error('getAll失敗:', e); state.tickets = []; }
+    try { state.pendingInvites = DB.mode === 'firestore' ? await DB.getMyInvites() : []; } catch (e) { state.pendingInvites = []; }
+
     showProjectListUI();
     renderProjectList();
   }
 
   async function refresh() {
-    state.projects = await DB.getProjects();
-    state.tickets = await DB.getAll();
+    try { state.projects = await DB.getProjects(); } catch (e) { console.error('getProjects失敗:', e); }
+    try { state.tickets = await DB.getAll(); } catch (e) { console.error('getAll失敗:', e); }
     if (DB.mode === 'firestore') {
       try { state.pendingInvites = await DB.getMyInvites(); } catch (e) {}
     }
@@ -378,10 +375,13 @@ const App = (() => {
   function bindProjectEvents() {
     document.getElementById('btn-new-project').addEventListener('click', () => openProjectModal(null));
     document.getElementById('btn-back').addEventListener('click', backToProjects);
-    document.getElementById('invite-modal-close').addEventListener('click', () => {
-      document.getElementById('invite-modal').close();
-      _inviteProjectId = null;
-    });
+    const inviteCloseBtn = document.getElementById('invite-modal-close');
+    if (inviteCloseBtn) {
+      inviteCloseBtn.addEventListener('click', () => {
+        document.getElementById('invite-modal').close();
+        _inviteProjectId = null;
+      });
+    }
 
     document.getElementById('project-modal-cancel').addEventListener('click', () => {
       document.getElementById('project-modal').close();
